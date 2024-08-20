@@ -164,28 +164,88 @@ var config = {
     config.recognition.start();
   },
 
-  // Function to call api in end
-  "callApi": function (transcript) {
+  "callGoogleTTS": async function (text) {
+    const apiKey = '';
+    const url = `https://texttospeech.googleapis.com/v1/text:synthesize?key=${apiKey}`;
+
+    const requestData = {
+      input: { text: text },
+      voice: {
+        languageCode: 'en-IN',
+        name: 'en-IN-Standard-C', // Change to preferred voice
+      },
+      audioConfig: {
+        audioEncoding: 'MP3',
+        speakingRate: 1.0, // Adjust as needed
+      },
+    };
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestData),
+      });
+
+      const data = await response.json();
+
+      // The API response contains audio content encoded in base64
+      const audioContent = data.audioContent;
+
+      // Convert the base64 string to an audio source and play it
+      const audio = new Audio(`data:audio/mp3;base64,${audioContent}`);
+      audio.play();
+    } catch (error) {
+      console.error('Error calling Google TTS:', error);
+    }
+  },
+
+   // Function to call API in end
+   "callApi": function (transcript) {
     console.log(transcript);
 
-      //   fetch('http://127.0.0.1:8000/chat', {
-      //     method: 'POST',
-      //     headers: {
-      //         'Content-Type': 'application/json',  // Ensure the correct content type
-      //     },
-      //     body: JSON.stringify({
-      //         session_id: '123',  // Provide a session ID
-      //         human_say: transcript
-      //     })
-      // })
-      // .then(response => response.json())
-      // .then(data => {
-      //     console.log('Bot Response:', data);
-      // })
-      // .catch(error => {
-      //     console.error('Error:', error);
-      // });
+    fetch('http://127.0.0.1:8000/chat', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        session_id: '123',
+        human_say: transcript
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log('Bot Response:', data);
+
+      // Extract the bot's response text
+      const botResponse = data.response;
+
+      // Call Google TTS
+      config.callGoogleTTS(botResponse);
+
+      // Optional: Use browser's built-in TTS
+      /*
+      const utterance = new SpeechSynthesisUtterance(botResponse);
+      const voices = window.speechSynthesis.getVoices();
+      const raviVoice = voices.find(voice => voice.name === 'Microsoft Ravi - English (India)');
+      if (raviVoice) {
+        utterance.voice = raviVoice;
+      }
+      utterance.pitch = 1.0;
+      utterance.rate = 1.0;
+      window.speechSynthesis.speak(utterance);
+      */
+    })
+    .catch(error => {
+      console.error('Error:', error);
+    });
   },
+
+
+
 
 
   "resize": {

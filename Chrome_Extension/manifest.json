@@ -1,7 +1,7 @@
 {
   "version": "0.1.5",
   "manifest_version": 3,
-  "permissions": ["storage", "contextMenus"],
+  "permissions": ["storage", "contextMenus","tabs","activeTab"],
   "name": "Speech to Text (Voice Recognition)",
   "homepage_url": "https://mybrowseraddon.com/speech-to-text.html",
   "description": "An easy to use speech synthesis and recognition tool for your browser!",

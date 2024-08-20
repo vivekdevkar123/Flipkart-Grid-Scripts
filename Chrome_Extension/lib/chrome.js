@@ -223,6 +223,49 @@ app.tab = {
   }
 };
 
+// While clicking on the product the product link is opened in new tab
+
+// Function to check if the URL is a Flipkart URL
+function isFlipkartUrl(url) {
+  return url && url.includes("flipkart.com");
+}
+
+// Function to extract the part of the URL needed for the API endpoint
+function extractUrlPart(url) {
+  // Create a URL object to easily parse the URL
+  const urlObject = new URL(url);
+  
+  // Get the pathname from the URL
+  const pathname = urlObject.pathname;
+  
+  // Extract the desired part of the pathname
+  const match = pathname.match(/\/([^\/]+\/p\/[^\/]+)\b/);
+
+  // Return the matched part or indicate that it wasn't found
+  return match ? match[1] : "No matching part found";
+}
+
+// Listen for tab activation events
+chrome.tabs.onActivated.addListener(function(activeInfo) {
+  // Get the details of the newly active tab
+  chrome.tabs.get(activeInfo.tabId, function(tab) {
+    // Use pendingUrl if available, otherwise use the actual URL
+    const url = tab.pendingUrl || tab.url;
+
+    if (isFlipkartUrl(url)) {
+      // Extract and log the specific part of the URL if it's a Flipkart URL
+      const extractedPart = extractUrlPart(url);
+      console.log("Extracted URL part:", extractedPart);
+    } else {
+      console.log("The active tab is not a Flipkart URL.");
+    }
+  });
+});
+
+
+
+
+
 app.interface = {
   "port": null,
   "message": {},
