@@ -279,8 +279,6 @@ var config = {
   },
   "load": function () {
     const reload = document.getElementById("reload");
-    const support = document.getElementById("support");
-    const donation = document.getElementById("donation");
     /*  */
     config.button.font = document.getElementById("font");
     config.button.size = document.getElementById("size");
@@ -303,16 +301,6 @@ var config = {
     reload.addEventListener("click", function () {
       document.location.reload();
     });
-    /*  */
-    support.addEventListener("click", function () {
-      const url = config.addon.homepage();
-      chrome.tabs.create({"url": url, "active": true});
-    }, false);
-    /*  */
-    donation.addEventListener("click", function () {
-      const url = config.addon.homepage() + "?reason=support";
-      chrome.tabs.create({"url": url, "active": true});
-    }, false);
     /*  */
     config.storage.load(config.app.start);
     window.removeEventListener("load", config.load, false);
