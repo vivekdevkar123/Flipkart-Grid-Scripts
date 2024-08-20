@@ -163,17 +163,6 @@ def Get_Product_Details(url:str):
 
     return result
 
-def Get_Product_Details_Using_API(url:str):
-    '''
-    Example URL : thomson-phoenix-108-cm-43-inch-qled-ultra-hd-4k-smart-google-tv-dolby-vision-atmos/p/itm70a7a64aa66d3?pid=TVSGSHZRWZPTZ47Z&lid=LSTTVSGSHZRWZPTZ47ZXMEUVE&marketplace=FLIPKART&q=tv&store=ckf%2Fczl&srno=s_1_1&otracker=AS_Query_TrendingAutoSuggest_8_0_na_na_na&otracker1=AS_Query_TrendingAutoSuggest_8_0_na_na_na&fm=organic&iid=a9fe665a-e80d-4be2-80ea-5b9e64cc8c9b.TVSGSHZRWZPTZ47Z.SEARCH&ppt=sp&ppn=sp&ssid=4u06416bc00000001724000578453&qH=c9a1fdac6e082dd8
-
-    '''
-    response = requests.get("http://localhost:3000/product/" + url)
-    if response.status_code == 200:
-        data = response.json()
-        return data
-    else:
-        print("bad request",response.status_code)
 
 def Get_Order_History(cookies):
 

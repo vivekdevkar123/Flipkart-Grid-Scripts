@@ -1,21 +1,8 @@
 import json
 from flask import Flask, request, jsonify
-from Crawler import Get_Order_History,Get_Product_Details,Get_Product_Details_Using_API,Get_Related_Post
+from Crawler import Get_Order_History,Get_Product_Details,Get_Related_Post
 
 app = Flask(__name__)
-
-@app.route('/sendprompt', methods=['POST'])
-def send_text():
-    # Get the text data from the request
-    data = request.json
-    text = data.get('prompt', '')
-
-    # Return the text data in the response
-    return jsonify({
-        'status': 'success',
-        'prompt': text
-    })
-
 
 @app.route('/get_product_details', methods=['POST'])
 def get_product_details():
@@ -23,7 +10,11 @@ def get_product_details():
         try:
             data = request.get_json()
             url = data.get('url')
-            product_details = Get_Product_Details(url)
+
+            for _ in range(3):
+                product_details = Get_Product_Details(url)
+                if product_details:
+                    break
 
             # Formatting the offers
             offers_str = "\n".join([
@@ -63,7 +54,11 @@ def get_order_history():
         try:
             data = request.get_json()
             cookies = data.get('cookies')
-            order_details = Get_Order_History(cookies)
+
+            for _ in range(3):
+                order_details = Get_Order_History(cookies)
+                if order_details:
+                    break
 
             formatted_response = ""
 
@@ -79,21 +74,6 @@ def get_order_history():
         
         except Exception as e:
             return jsonify({'error': str(e)}), 500
-        
-
-
-@app.route('/get_product_details_using_api', methods=['POST'])
-def get_product_details_using_api():
-    if request.method == 'POST':
-        try:
-            data = request.get_json()
-            url = data.get('url')
-            order_details = Get_Product_Details_Using_API(url)
-            
-            return jsonify(order_details), 200
-        
-        except Exception as e:
-            return jsonify({'error': str(e)}), 500
 
 
 @app.route('/get_related_post', methods=['POST'])
@@ -102,7 +82,11 @@ def get_related_post():
         try:
             data = request.get_json()
             url = data.get('url')
-            order_details = Get_Related_Post(url)
+
+            for _ in range(3):
+                order_details = Get_Related_Post(url)
+                if order_details:
+                    break
 
             formatted_response = ""
             for order in order_details:
