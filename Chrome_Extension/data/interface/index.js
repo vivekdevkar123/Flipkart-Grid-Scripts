@@ -72,8 +72,6 @@ var config = {
   "button": {
     "info": {},
     "talk": {},
-    "font": {},
-    "size": {},
     "final": {},
     "start": {},
     "dialect": {},
@@ -90,8 +88,6 @@ var config = {
   },
   "app": {
     "start": function () {
-      config.update.size();
-      config.update.font();
       config.speech.synthesis.init();
     }
   },
@@ -107,8 +103,6 @@ var config = {
     }
   },
   "nosupport": function (e) {
-    config.button.size.disabled = true;
-    config.button.font.disabled = true;
     config.button.start.disabled = true;
     config.button.dialect.disabled = true;
     config.button.language.disabled = true;
@@ -134,8 +128,6 @@ var config = {
       config.update.dialect(config.language[config.speech.synthesis.prefs.language]);
       config.button.language.selectedIndex = config.speech.synthesis.prefs.language;
       config.button.dialect.selectedIndex = config.speech.synthesis.prefs.dialect;
-      config.button.font.selectedIndex = config.speech.synthesis.prefs.font;
-      config.button.size.value = config.speech.synthesis.prefs.size;
     }
   },
   "message": {
@@ -150,13 +142,17 @@ var config = {
     "no_support": "Speech recognition API is NOT supported in your browser!",
     "allow": "Please click the - Allow - button to enable microphone in your browser."
   },
+
+  
+  // Function which records the value
   "start": function (e) {
+
     if (config.speech.synthesis.recognizing) {
       config.recognition.stop();
       config.show.info("copy");
       return;
     }
-    /*  */
+
     config.speech.synthesis.start.timestamp = e.timeStamp;
     config.recognition.lang = config.button.dialect.value;
     config.speech.synthesis.final.transcript = '';
@@ -164,9 +160,34 @@ var config = {
     config.button.talk.src = "images/nomic.png";
     config.button.interim.textContent = '';
     config.button.final.textContent = '';
-    /*  */
+
     config.recognition.start();
   },
+
+  // Function to call api in end
+  "callApi": function (transcript) {
+    console.log(transcript);
+
+      //   fetch('http://127.0.0.1:8000/chat', {
+      //     method: 'POST',
+      //     headers: {
+      //         'Content-Type': 'application/json',  // Ensure the correct content type
+      //     },
+      //     body: JSON.stringify({
+      //         session_id: '123',  // Provide a session ID
+      //         human_say: transcript
+      //     })
+      // })
+      // .then(response => response.json())
+      // .then(data => {
+      //     console.log('Bot Response:', data);
+      // })
+      // .catch(error => {
+      //     console.error('Error:', error);
+      // });
+  },
+
+
   "resize": {
     "timeout": null,
     "method": function () {
@@ -207,14 +228,6 @@ var config = {
     }
   },
   "store": {
-    "size": function () {
-      config.speech.synthesis.prefs.size = config.button.size.value;
-      config.update.size();
-    },
-    "font": function () {
-      config.speech.synthesis.prefs.font = config.button.font.selectedIndex;
-      config.update.font();
-    },
     "dialect": function () {
       config.speech.synthesis.prefs.dialect = config.button.dialect.selectedIndex;
       config.recognition.stop();
@@ -280,8 +293,6 @@ var config = {
   "load": function () {
     const reload = document.getElementById("reload");
     /*  */
-    config.button.font = document.getElementById("font");
-    config.button.size = document.getElementById("size");
     config.button.talk = document.getElementById("talk");
     config.button.info = document.getElementById("info");
     config.button.start = document.getElementById("start");
@@ -293,8 +304,6 @@ var config = {
     config.current.element.interim = document.querySelector(".container .results .interim");
     /*  */
     config.button.start.addEventListener("click", config.start, false);
-    config.button.font.addEventListener("change", config.store.font, false);
-    config.button.size.addEventListener("change", config.store.size, false);
     config.button.dialect.addEventListener("change", config.store.dialect, false);
     config.button.language.addEventListener("change", config.store.language, false);
     /*  */
@@ -306,18 +315,6 @@ var config = {
     window.removeEventListener("load", config.load, false);
   },
   "update": {
-    "font": function () {
-      const font = config.button.font[config.speech.synthesis.prefs.font].textContent;
-      /*  */
-      config.current.element.final.style.fontFamily = font;
-      config.current.element.interim.style.fontFamily = font;
-    },
-    "size": function () {
-      const size = config.speech.synthesis.prefs.size;
-      /*  */
-      config.current.element.final.style.fontSize = size + "px";
-      config.current.element.interim.style.fontSize = size + "px";
-    },
     "dialect": function (target) {
       if (target) {
         config.button.dialect.textContent = '';
@@ -352,12 +349,8 @@ var config = {
         config.speech.synthesis.methods.oninit();
       },
       "prefs": {
-        set font (val) {config.storage.write("font", val)},
-        set size (val) {config.storage.write("size", val)},
         set dialect (val) {config.storage.write("dialect", val)},
         set language (val) {config.storage.write("language", val)},
-        get font () {return config.storage.read("font") !== undefined ? config.storage.read("font") : 19},
-        get size () {return config.storage.read("size") !== undefined ? config.storage.read("size") : 14},
         get dialect () {return config.storage.read("dialect") !== undefined ? config.storage.read("dialect") : 11},
         get language () {return config.storage.read("language") !== undefined ? config.storage.read("language") : 10},
       },
@@ -382,6 +375,8 @@ var config = {
             config.show.info("end", "No results to show! please try again later.");
             return;
           }
+
+          config.callApi(config.speech.synthesis.final.transcript);
           /*  */
           config.selection();
           config.show.info("copy");
