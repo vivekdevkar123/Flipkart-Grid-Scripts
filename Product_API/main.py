@@ -1,8 +1,10 @@
 import json
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from Crawler import Get_Order_History,Get_Product_Details,Get_Related_Post
 
 app = Flask(__name__)
+CORS(app)
 
 @app.route('/get_product_details', methods=['POST'])
 def get_product_details():

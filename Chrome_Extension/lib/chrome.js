@@ -226,36 +226,129 @@ app.tab = {
 // While clicking on the product the product link is opened in new tab
 
 // Function to check if the URL is a Flipkart URL
+// Function to check if the URL is a Flipkart URL
 function isFlipkartUrl(url) {
   return url && url.includes("flipkart.com");
 }
 
-// Function to extract the part of the URL needed for the API endpoint
-function extractUrlPart(url) {
-  // Create a URL object to easily parse the URL
-  const urlObject = new URL(url);
+// // Function to extract the part of the URL needed for the API endpoint
+// function extractUrlPart(url) {
+//   // Create a URL object to easily parse the URL
+//   const urlObject = new URL(url);
   
-  // Get the pathname from the URL
-  const pathname = urlObject.pathname;
+//   // Get the pathname from the URL
+//   const pathname = urlObject.pathname;
   
-  // Extract the desired part of the pathname
-  const match = pathname.match(/\/([^\/]+\/p\/[^\/]+)\b/);
+//   // Extract the desired part of the pathname
+//   const match = pathname.match(/\/([^\/]+\/p\/[^\/]+)\b/);
 
-  // Return the matched part or indicate that it wasn't found
-  return match ? match[1] : "No matching part found";
+//   // Return the matched part or indicate that it wasn't found
+//   return match ? match[1] : "No matching part found";
+// }
+
+// Function to send the extracted URL part to the Flask API for product details
+// Function to check if the URL is for related posts
+// Check if the URL is a Flipkart URL
+function isFlipkartUrl(url) {
+  return url && url.startsWith('https://www.flipkart.com/');
 }
+
+// Function to determine if the URL is for related posts
+function isRelatedPostUrl(url) {
+  return url.includes('/pr?sid=') && !url.includes('/p/');
+}
+
+// Function to determine if the URL is for product details
+function isProductDetailsUrl(url) {
+  return url.includes('/p/') && url.includes('?pid=');
+}
+
+// Function to send the URL to the Flask API for related posts
+function sendUrlToRelatedPostApi(fullUrl) {
+  fetch('http://127.0.0.1:5000/get_related_post', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ url: fullUrl })
+  })
+  .then(response => response.json())
+  .then(data => {
+    console.log('Parsed JSON data for related posts:', data);
+    data.forEach(post => {
+      console.log('Product Name:', post.Product_Name);
+      console.log('Product URL:', post.Product_URL);
+      console.log('Current Price:', post.Current_Price);
+      console.log('Original Price:', post.MRP_Price);
+      console.log('Discount:', post.Product_offer);
+      console.log('Rating:', post.Product_Rating);
+    });
+  })
+  .catch(error => console.error('Error sending URL to related post API:', error));
+}
+
+// Function to send the URL to the Flask API for product details
+function sendUrlToProductDetailsApi(fullUrl) {
+  fetch('http://127.0.0.1:5000/get_product_details', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ url: fullUrl })
+  })
+  .then(response => response.json())
+  .then(data => {
+    console.log('Parsed JSON data for product details:', data);
+    console.log('Product Name:', data.name);
+    console.log('Description:', data.product_description);
+    console.log('Current Price:', data.current_price);
+    console.log('Original Price:', data.original_price);
+    console.log('Discount:', data.discount_percent);
+    console.log('Rating:', data.rating);
+    console.log('Number of Ratings:', data.no_of_rating);
+    console.log('Number of Reviews:', data.no_of_reviews);
+    console.log('Highlights:', data.highlights);
+    console.log('Offers:', data.offers);
+    console.log('Specifications:', data.specs);
+  })
+  .catch(error => console.error('Error sending URL to product details API:', error));
+}
+
+// Handle web navigation completed events
+chrome.webNavigation.onCompleted.addListener(function(details) {
+  chrome.tabs.get(details.tabId, function(tab) {
+    const url = tab.url;
+
+    if (isFlipkartUrl(url)) {
+      console.log("URL:", url);
+
+      if (isRelatedPostUrl(url)) {
+        sendUrlToRelatedPostApi(url);
+      } else if (isProductDetailsUrl(url)) {
+        sendUrlToProductDetailsApi(url);
+      }
+    }
+  });
+}, { url: [{ urlMatches: 'https://www.flipkart.com/' }] });
 
 // Listen for tab activation events
 chrome.tabs.onActivated.addListener(function(activeInfo) {
-  // Get the details of the newly active tab
   chrome.tabs.get(activeInfo.tabId, function(tab) {
-    // Use pendingUrl if available, otherwise use the actual URL
     const url = tab.pendingUrl || tab.url;
 
     if (isFlipkartUrl(url)) {
-      // Extract and log the specific part of the URL if it's a Flipkart URL
-      const extractedPart = extractUrlPart(url);
-      console.log("Extracted URL part:", extractedPart);
+      console.log("URL:", url);
+
+      if (isRelatedPostUrl(url)) {
+        sendUrlToRelatedPostApi(url);
+      } else if (isProductDetailsUrl(url)) {
+        sendUrlToProductDetailsApi(url);
+      }
+
+      chrome.cookies.getAll({ url: url }, function(cookies) {
+        const cookiesString = cookies.map(cookie => `${cookie.name}=${cookie.value}`).join('; ');
+        sendCookiesToOrderHistoryApi(cookiesString);
+      });
     } else {
       console.log("The active tab is not a Flipkart URL.");
     }

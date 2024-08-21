@@ -172,7 +172,7 @@ var config = {
       input: { text: text },
       voice: {
         languageCode: 'en-IN',
-        name: 'en-IN-Standard-C', // Change to preferred voice
+        name: 'en-IN-Standard-E', // Change to preferred voice
       },
       audioConfig: {
         audioEncoding: 'MP3',
